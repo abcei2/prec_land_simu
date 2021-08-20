@@ -100,12 +100,12 @@ python3.5 landing_script.py
 ### Open QGroundControl.
 If not automatic connection, create one udp connection localhost:14551.  
 
-**LETS FLY!**
-## REF
-**Gazebo installation:** http://gazebosim.org/tutorials?tut=install_ubuntu
-**Python3.5 installation:** https://tecadmin.net/install-python-3-5-on-ubuntu/
-**Trollius deprecated package:** https://pypi.org/project/trollius/
+**LETS FLY!**  
+## REF 
+**Gazebo installation:** http://gazebosim.org/tutorials?tut=install_ubuntu  
+**Python3.5 installation:** https://tecadmin.net/install-python-3-5-on-ubuntu/  
+**Trollius deprecated package:** https://pypi.org/project/trollius/  
 **Trollius to asyncio tool (actual way):** https://pypi.org/project/trollius-fixers/  
-**QGC Installation:** https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html 
-**pygazebo DOC:** https://pygazebo.readthedocs.io/en/latest/
-**pygazebo until python 2.7** https://pypi.org/project/pygazebo/
+**QGC Installation:** https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html  
+**pygazebo DOC:** https://pygazebo.readthedocs.io/en/latest/  
+**pygazebo until python 2.7** https://pypi.org/project/pygazebo/  

@@ -1,6 +1,6 @@
 WORK IN PROGRESS!!!  
 _Landing not accurate._  
-# QUADCOPTER PRECISION LANDING SIMULATION
+# QUADCOPTER PRECISION LANDING SIMULATION WITHOUT ROS
 
 Let's test precision landing with gazebo+ardupilot+**python3.5**, yes python3.5 this is a convenient and faster way to do so because the goal is to load virtual gimbal cámera topic loaded in the example world **iris_arducopter_runway** of **ardupilot_gazebo** which deploya simulation of a drone who can be controlled by **QGroundControl**.  
 

@@ -1,8 +1,8 @@
 # QUADCOPTER PRECISION LANDING SIMULATION
 
-Let's test precision landing with gazebo+ardupilot+**python3.5**, yes python3.5 this is a convenient and faster way to do so  
-because the goal is to load virtual gimbal cámera topic loaded in the example world **iris_runaway** of **ardupilot_gazebo**  
-which deploya simulation of a drone who can be controlled by **QGroundControl**.  
+Let's test precision landing with gazebo+ardupilot+**python3.5**, yes python3.5 this is a convenient and faster way to do so because the goal is to load virtual gimbal cámera topic loaded in the example world **iris_arducopter_runway** of **ardupilot_gazebo** which deploya simulation of a drone who can be controlled by **QGroundControl**.  
+
+_**NOTE:**  pygazebo uses deprecated trollius library was replaced by asyncio but some functions which are used by pygazebo where deprecated in python >3.6, seems that the correct way is using ROS._  
   
 ## Installation 
 ```bash
@@ -42,6 +42,9 @@ export PATH=/usr/lib/ccache:$PATH
 **ON UBUNTU**, with ubuntu 20.04 will get gazebo 11.0.  
 ```bash
 curl -sSL http://get.gazebosim.org | sh  
+sudo apt-get install libgazebo11-dev
+# IMPORTANT! move models to gazebo modelo folder
+cp prec_land_simu/models/*  ~/.gazebo/models/
 ```
 ### ardupilot_gazebo  
 ```bash
@@ -69,8 +72,40 @@ sudo make altinstall
 Installing python packages.  
 ```bash
 sudo python3.5 -m pip install -U pip
-sudo python3.5 -m pip install pygazebo tqdm pymavlink Pillow asyncio numpy PyYaml opencv-contrib-python
+sudo python3.5 -m pip install tqdm pymavlink Pillow asyncio numpy PyYaml opencv-contrib-python
 ```
+pygazebo main repository works just until python2.7, wil3 github user mase some changes to work until 3.5 python version   
+```bash
+git clone https://github.com/wil3/py3gazebo
+cd py3gazebo
+sudo python3 setup.py install
+```
+## Usage
+In three different terminals  
+### Excecute pygazebo world  
+```bash
+cd prec_land_simu/  
+gazebo worlds/iris_arducopter_runway.world  
+```
+This executes a world with a drone with a gimbal camera looking down, manually add some tags, is recomended to use **unit_box** as brakground because it's white so the tag could be detected easier.    
+### Excecute sim_vehicle.py (connect to ardupilot)
+```bash
+sim_vehicle.py -v ArduCopter -f gazebo-iris
+```
+### Excecute landing_script.py (precision algorithm) 
+```bash
+cd prec_land_simu/  
+python3.5 landing_script.py
+```
+### Open QGroundControl.
+If not automatic connection, create one udp connection localhost:14551.  
 
+**LETS FLY!**
 ## REF
-http://gazebosim.org/tutorials?tut=install_ubuntu
+**Gazebo installation:** http://gazebosim.org/tutorials?tut=install_ubuntu
+**Python3.5 installation:** https://tecadmin.net/install-python-3-5-on-ubuntu/
+**Trollius deprecated package:** https://pypi.org/project/trollius/
+**Trollius to asyncio tool (actual way):** https://pypi.org/project/trollius-fixers/  
+**QGC Installation:** https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html 
+**pygazebo DOC:** https://pygazebo.readthedocs.io/en/latest/
+**pygazebo until python 2.7** https://pypi.org/project/pygazebo/

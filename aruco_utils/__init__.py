@@ -122,34 +122,93 @@ def calib_camera(arucoParams, aruco_dict, horizontal_tag_ammount, vertical_tag_a
         yaml.dump(data, f)
 
 
-def update_landing(drone, initialLocation, angle_x, angle_y, tvec, dist_to_marker=0, hertz=5):
+def update_landing_gps(drone, initialLocation, angle_x, angle_y, tvec,id_target, markerLength, rvec, time_capture=int(time.time()*1e6),dist_to_marker=0, hertz=5):
+  
+    globalPosInt = drone.recv_match(type='GLOBAL_POSITION_INT', blocking=False)
+
+    if globalPosInt:
+        tvec[2]= globalPosInt.relative_alt
+        time_capture = globalPosInt.time_boot_ms * 1000
+        angle_x = math.atan2(tvec[0],tvec[2])
+        angle_y = math.atan2(tvec[1],tvec[2])
+        angle_x = math.atan2(tvec[0],dist_to_marker)
+        angle_y = math.atan2(tvec[1],dist_to_marker)
+        target_size_xy = math.atan2(markerLength,dist_to_marker)# Because is a square
+        landing_target_send(drone,angle_x,angle_y,int(abs(dist_to_marker)/1000), time_capture, 0,0)
+        distance_message(drone,int(dist_to_marker))
+        print(math.degrees(angle_x),math.degrees(angle_y))
+
+
+def update_landing_dist(drone, initialLocation, angle_x, angle_y, tvec,id_target, markerLength, rvec, time_capture=int(time.time()*1e6),dist_to_marker=0, hertz=5):
+
+    dist_to_marker = math.sqrt(tvec[0]**2+tvec[1]**2+tvec[2]**2 )
+
+    angle_x = math.atan2(tvec[0],dist_to_marker)
+    angle_y = math.atan2(tvec[1],dist_to_marker)
+    target_size_xy = math.atan2(markerLength,dist_to_marker)# Because is a square
+    landing_target_send(drone,angle_x,angle_y,int(abs(dist_to_marker)/1000), time_capture, 0,0)
+    distance_message(drone,int(dist_to_marker))
+    print(math.degrees(angle_x),math.degrees(angle_y))
+
+def update_landing(drone, initialLocation, angle_x, angle_y, tvec,id_target, markerLength, rvec, time_capture=int(time.time()*1e6),dist_to_marker=0, hertz=5):
+
     
-    if dist_to_marker == 0:
-        print("WHY IS ZERO?")
-        return
-    horizontal_fov = math.radians(54)
-    vertical_fov = math.radians(41)
 
-    # angle_x = -math.atan(tvec[0]/(tvec[2]))
-    # angle_y = -math.atan(tvec[1]/tvec[2])
-    #globalPosInt = drone.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
+    dist_to_marker = math.sqrt(tvec[0]**2+tvec[1]**2+tvec[2]**2 )
 
-    # drone.mav.set_send_callback(send_callback)
+    angle_x = math.atan2(tvec[0],tvec[2])
+    angle_y = math.atan2(tvec[1],tvec[2])
+    target_size_xy = math.atan2(markerLength,dist_to_marker)# Because is a square
+    landing_target_send(drone,angle_x,angle_y,int(abs(dist_to_marker)/1000), time_capture, 0,0)
+    distance_message(drone,int(dist_to_marker))
+
+def landing_target_send(drone,x,y,z, time_usec=0, target_num=0, target_size_xy=0):
+    #print(x,y,z, time_usec, target_num, target_size_xy)
     drone.mav.landing_target_send(
         # globalPosInt.time_boot_ms * 1000,  # time in us since system boot
-        int(time.time()*1e6),
-        1,	
+        time_usec,
+        target_num,	
         mavutil.mavlink.MAV_FRAME_LOCAL_NED,
-        angle_x,
-        angle_y,
-        dist_to_marker ,  # distance drone-target
-        0, 0,  # Size of target in radians
-        tvec[0], tvec[1], tvec[2]
-        #horizontal_fov, vertical_fov
+        x,
+        y,
+        -z,  # distance drone-target
+        target_size_xy,          # Target x-axis size, in radians
+        target_size_xy          # Target y-axis size, in radians
     )
-    # print("sent", angle_x, angle_y, horizontal_fov, vertical_fov)
+    
+def landing_message(drone,x,y,z, time_usec=0, target_num=0):
+    msg = drone.mav.message_factory.landing_target_encode(
+        time_usec,          # time target data was processed, as close to sensor capture as possible
+        target_num,          # target num, not used
+        mavutil.mavlink.MAV_FRAME_BODY_NED, # frame, not used
+        x,          # X-axis angular offset, in radians
+        y,          # Y-axis angular offset, in radians
+        z,          # distance, in meters
+        0,          # Target x-axis size, in radians
+        0,          # Target y-axis size, in radians
+        0,          # x	float	X Position of the landing target on MAV_FRAME
+        0,          # y	float	Y Position of the landing target on MAV_FRAME
+        0,          # z	float	Z Position of the landing target on MAV_FRAME
+        (1,0,0,0),  # q	float[4]	Quaternion of landing target orientation (w, x, y, z order, zero-rotation is 1, 0, 0, 0)
+        2,          # type of landing target: 2 = Fiducial marker
+        1,          # position_valid boolean
+    )
+    
+    drone.mav.send_mavlink(msg)
+    drone.mav.flush()
 
-
+def distance_message(drone,dist):
+    
+    drone.mav.distance_sensor_send(
+        0,          # time since system boot, not used
+        1,          # min distance cm
+        4000,      # max distance cm
+        dist,       # current distance, must be int
+        0,          # type = laser?
+        0,          # onboard id, not used
+        mavutil.mavlink.MAV_SENSOR_ROTATION_PITCH_270, # must be set to MAV_SENSOR_ROTATION_PITCH_270 for mavlink rangefinder, represents downward facing
+        0           # covariance, not used
+    )
 # Checks if a matrix is a valid rotation matrix.
 def isRotationMatrix(R):
     Rt = np.transpose(R)

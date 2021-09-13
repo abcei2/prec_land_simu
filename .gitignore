@@ -1,2 +1,6 @@
 __pycache__
 *.pyc
+*.BIN
+*.DAT
+logs/LASTLOG.TXT
+eeprom.bin

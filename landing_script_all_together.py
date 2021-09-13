@@ -46,7 +46,9 @@ dist = loadeddict.get('dist_coeff')
 mtx = np.array(mtx)
 dist = np.array(dist)
 
-global time_0, bussy_task
+global time_0, bussy_task, markerLength
+
+markerLength = 0
 time_0 = time.time()
 
 bussy_task = False
@@ -54,12 +56,13 @@ bussy_task = False
 
 class BackgroundTasks(threading.Thread):
 
-    def __init__(self,img):
+    def __init__(self,img,time_picture):
         super(BackgroundTasks, self).__init__()
         self.image=img
+        self.time_picture = time_picture
     def run(self,*args,**kwargs):
 
-        global time_0, bussy_task, hertz
+        global time_0, bussy_task, hertz, markerLength
         img=self.image
         if time.time() >= time_0 + 1.0/hertz:      
             img=Image.frombytes('RGB', (640,480), img, 'raw')
@@ -80,46 +83,32 @@ class BackgroundTasks(threading.Thread):
                         return
                 except:
                     pass
-                bigger_corner=[]
-                bigger_id=0
-                markerLength = 0
+                corners_dict={}
                 for corner, id1 in zip(corners,ids):
-                    bigger_corner = corner
-                    bigger_id=id1
-                    if id1==21: 
-                        if markerLength>30 or markerLength==0:
-                            markerLength=29.2
+                    markerLength = 0
+                    if id1[0]==20: 
+                        markerLength=14.6
+                    if id1[0]==21: 
+                        markerLength=29.2    
+                    if id1[0]==22: 
+                        markerLength=58.5
+                    if id1[0]==23:                         
+                        markerLength=117.8 
                     
                     
-                    if id1==22: 
-                        if markerLength>58.5 or markerLength==0:
-                            markerLength=58.5
-
-                    if id1==23: 
-                        if markerLength>117.8  or markerLength==0:
-                            markerLength=117.8 
-                  
-                     
-                if markerLength ==0:
-                    bussy_task = False
-                    return                    
+                    rvec, tvec, _obj_points = aruco.estimatePoseSingleMarkers(corner, markerLength, mtx, dist)
+                    tvec = tvec[0][0]
+                    dist_to_marker_2d=math.sqrt(tvec[0]**2+tvec[1]**2)
+                    dist_to_marker = math.sqrt(tvec[0]**2+tvec[1]**2+tvec[2]**2 )
                 
-                rvec, tvec, _obj_points = aruco.estimatePoseSingleMarkers(corner, markerLength, mtx, dist)
-                tvec = tvec[0][0]
-                dist_to_marker_2d=math.sqrt(tvec[0]**2+tvec[1]**2)
-                dist_to_marker = math.sqrt(tvec[0]**2+tvec[1]**2+tvec[2]**2 )
-                angle_x = math.atan2(tvec[0],tvec[2])
-                angle_y = math.atan2(tvec[1],tvec[2])
-
-                print("id:",bigger_id[0],"x:",math.degrees(angle_x),"y:",math.degrees(angle_y), "dist_2d:",dist_to_marker_2d, "dist_3d:",dist_to_marker)
-                 
-                if CONNECT_MAVLINK:
-                    update_landing(drone,initialLocation,angle_x,angle_y,tvec,dist_to_marker,hertz)
-            
-          
-            if DISPLAY_RESULTS:        
-                cv2.imshow("Aruco", img_aruco)
-                cv2.waitKey(10)
+                    angle_x = math.atan2(tvec[0],tvec[2])
+                    angle_y = math.atan2(tvec[1],tvec[2])
+                    target_size_xy = math.atan2(markerLength,tvec[2])# Because is a square
+                    #print(target_size_xy,"id:",id1[0],"mlen",markerLength, "dist2d:",dist_to_marker_2d, "dist3d:",dist_to_marker)
+                    print("id:",id1[0], "dist2d:",dist_to_marker_2d, "dist3d:",dist_to_marker)
+                    if CONNECT_MAVLINK:
+                        update_landing(drone,initialLocation,angle_x,angle_y,tvec,id1[0], markerLength,self.time_picture, dist_to_marker ,hertz)
+         
         else:
             pass
 
@@ -131,7 +120,7 @@ def retrieve_image(image):
     global bussy_task
     if not bussy_task:
         bussy_task = True                
-        t = BackgroundTasks(image)
+        t = BackgroundTasks(image,int(time.time()*1e6))
         t.start()
     
 

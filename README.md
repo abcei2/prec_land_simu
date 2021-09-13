@@ -1,4 +1,6 @@
-# QUADCOPTER PRECISION LANDING SIMULATION
+WORK IN PROGRESS!!!  
+_Landing not accurate._  
+# QUADCOPTER PRECISION LANDING SIMULATION WITHOUT ROS
 
 Let's test precision landing with gazebo+ardupilot+**python3.5**, yes python3.5 this is a convenient and faster way to do so because the goal is to load virtual gimbal cámera topic loaded in the example world **iris_arducopter_runway** of **ardupilot_gazebo** which deploya simulation of a drone who can be controlled by **QGroundControl**.  
 
@@ -100,12 +102,12 @@ python3.5 landing_script.py
 ### Open QGroundControl.
 If not automatic connection, create one udp connection localhost:14551.  
 
-**LETS FLY!**
-## REF
-**Gazebo installation:** http://gazebosim.org/tutorials?tut=install_ubuntu
-**Python3.5 installation:** https://tecadmin.net/install-python-3-5-on-ubuntu/
-**Trollius deprecated package:** https://pypi.org/project/trollius/
+**LETS FLY!**  
+## REF 
+**Gazebo installation:** http://gazebosim.org/tutorials?tut=install_ubuntu  
+**Python3.5 installation:** https://tecadmin.net/install-python-3-5-on-ubuntu/  
+**Trollius deprecated package:** https://pypi.org/project/trollius/  
 **Trollius to asyncio tool (actual way):** https://pypi.org/project/trollius-fixers/  
-**QGC Installation:** https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html 
-**pygazebo DOC:** https://pygazebo.readthedocs.io/en/latest/
-**pygazebo until python 2.7** https://pypi.org/project/pygazebo/
+**QGC Installation:** https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html  
+**pygazebo DOC:** https://pygazebo.readthedocs.io/en/latest/  
+**pygazebo until python 2.7** https://pypi.org/project/pygazebo/  
